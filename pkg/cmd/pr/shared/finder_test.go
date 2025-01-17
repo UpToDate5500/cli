@@ -16,14 +16,15 @@ import (
 )
 
 type args struct {
-	baseRepoFn   func() (ghrepo.Interface, error)
-	branchFn     func() (string, error)
-	atPushRefFn  func(string) (string, error)
-	branchConfig func(string) (git.BranchConfig, error)
-	remotesFn    func() (context.Remotes, error)
-	selector     string
-	fields       []string
-	baseBranch   string
+	baseRepoFn       func() (ghrepo.Interface, error)
+	branchFn         func() (string, error)
+	atPushRefFn      func(string) (string, error)
+	branchConfig     func(string) (git.BranchConfig, error)
+	branchMergeRefFn func(string) (string, error)
+	remotesFn        func() (context.Remotes, error)
+	selector         string
+	fields           []string
+	baseBranch       string
 }
 
 func TestFind(t *testing.T) {
@@ -586,8 +587,8 @@ func Test_parseCurrentBranchWithAtPushRef(t *testing.T) {
 				branchFn: func() (string, error) {
 					return "branchName", nil
 				},
-				branchConfig: stubBranchConfig(git.BranchConfig{}, nil),
-				atPushRefFn:  stubAtPushRef("", errors.New("atPushRefErr")),
+				branchMergeRefFn: stubBranchMergeRef("", nil),
+				atPushRefFn:      stubAtPushRef("", errors.New("atPushRefErr")),
 			},
 			wantSelector: "",
 			wantPR:       0,
@@ -599,27 +600,25 @@ func Test_parseCurrentBranchWithAtPushRef(t *testing.T) {
 				branchFn: func() (string, error) {
 					return "branchName", nil
 				},
-				branchConfig: stubBranchConfig(git.BranchConfig{
-					MergeRef: "refs/pull/13/head",
-				}, nil),
-				atPushRefFn: stubAtPushRef("", nil),
+				branchMergeRefFn: stubBranchMergeRef("refs/pull/13/head", nil),
+				atPushRefFn:      stubAtPushRef("", nil),
 			},
 			wantSelector: "",
 			wantPR:       13,
 			wantError:    nil,
 		},
 		{
-			name: "When the branch config fails",
+			name: "When the branch merge ref fails",
 			args: args{
 				branchFn: func() (string, error) {
 					return "branchName", nil
 				},
-				branchConfig: stubBranchConfig(git.BranchConfig{}, fmt.Errorf("branchConfigError")),
-				atPushRefFn:  stubAtPushRef("", nil),
+				branchMergeRefFn: stubBranchMergeRef("", fmt.Errorf("branchMergeRefError")),
+				atPushRefFn:      stubAtPushRef("", nil),
 			},
 			wantSelector: "",
 			wantPR:       0,
-			wantError:    errors.New("branchConfigError"),
+			wantError:    errors.New("branchMergeRefError"),
 		},
 		{
 			name: "When the merge ref is not a PR, it should return the branch name as the selector",
@@ -627,8 +626,8 @@ func Test_parseCurrentBranchWithAtPushRef(t *testing.T) {
 				branchFn: func() (string, error) {
 					return "branchName", nil
 				},
-				branchConfig: stubBranchConfig(git.BranchConfig{}, nil),
-				atPushRefFn:  stubAtPushRef("origin/branchName", nil),
+				branchMergeRefFn: stubBranchMergeRef("", nil),
+				atPushRefFn:      stubAtPushRef("origin/branchName", nil),
 			},
 			baseRepoRemote: context.Remote{
 				Remote: &git.Remote{Name: "origin"},
@@ -644,8 +643,8 @@ func Test_parseCurrentBranchWithAtPushRef(t *testing.T) {
 				branchFn: func() (string, error) {
 					return "branchName", nil
 				},
-				branchConfig: stubBranchConfig(git.BranchConfig{}, nil),
-				atPushRefFn:  stubAtPushRef("origin/branchName", nil),
+				branchMergeRefFn: stubBranchMergeRef("", nil),
+				atPushRefFn:      stubAtPushRef("origin/branchName", nil),
 			},
 			baseRepoRemote: context.Remote{
 				Remote: &git.Remote{Name: "upstream"},
@@ -665,8 +664,8 @@ func Test_parseCurrentBranchWithAtPushRef(t *testing.T) {
 				branchFn: func() (string, error) {
 					return "branchName", nil
 				},
-				branchConfig: stubBranchConfig(git.BranchConfig{}, nil),
-				atPushRefFn:  stubAtPushRef("origin/branchName", nil),
+				branchMergeRefFn: stubBranchMergeRef("", nil),
+				atPushRefFn:      stubAtPushRef("origin/branchName", nil),
 			},
 			baseRepoRemote: context.Remote{
 				Remote: &git.Remote{Name: "upstream"},
@@ -687,9 +686,9 @@ func Test_parseCurrentBranchWithAtPushRef(t *testing.T) {
 				httpClient: func() (*http.Client, error) {
 					return &http.Client{}, nil
 				},
-				baseRepoFn:   stubBaseRepo(tt.baseRepoRemote.Repo, nil),
-				branchFn:     tt.args.branchFn,
-				branchConfig: tt.args.branchConfig,
+				baseRepoFn:     stubBaseRepo(tt.baseRepoRemote.Repo, nil),
+				branchFn:       tt.args.branchFn,
+				branchMergeRef: tt.args.branchMergeRefFn,
 				remotesFn: stubRemotes(context.Remotes{
 					&tt.baseRepoRemote,
 					&tt.forkRepoRemote,
@@ -766,5 +765,11 @@ func stubRemotes(remotes context.Remotes, err error) func() (context.Remotes, er
 func stubBaseRepo(repo ghrepo.Interface, err error) func() (ghrepo.Interface, error) {
 	return func() (ghrepo.Interface, error) {
 		return repo, err
+	}
+}
+
+func stubBranchMergeRef(mergeRef string, err error) func(string) (string, error) {
+	return func(branch string) (string, error) {
+		return mergeRef, err
 	}
 }

@@ -33,13 +33,14 @@ type progressIndicator interface {
 }
 
 type finder struct {
-	baseRepoFn   func() (ghrepo.Interface, error)
-	branchFn     func() (string, error)
-	remotesFn    func() (remotes.Remotes, error)
-	httpClient   func() (*http.Client, error)
-	branchConfig func(string) (git.BranchConfig, error)
-	atPushRef    func(string) (string, error)
-	progress     progressIndicator
+	baseRepoFn     func() (ghrepo.Interface, error)
+	branchFn       func() (string, error)
+	remotesFn      func() (remotes.Remotes, error)
+	httpClient     func() (*http.Client, error)
+	branchConfig   func(string) (git.BranchConfig, error)
+	branchMergeRef func(string) (string, error)
+	atPushRef      func(string) (string, error)
+	progress       progressIndicator
 
 	repo       ghrepo.Interface
 	prNumber   int
@@ -64,6 +65,9 @@ func NewFinder(factory *cmdutil.Factory) PRFinder {
 		},
 		atPushRef: func(branch string) (string, error) {
 			return factory.GitClient.ReadAtPushRef(context.Background(), branch)
+		},
+		branchMergeRef: func(branch string) (string, error) {
+			return factory.GitClient.ReadBranchMergeRef(context.Background(), branch)
 		},
 	}
 }
@@ -242,12 +246,12 @@ func (f *finder) parseCurrentBranchWithAtPushRef() (string, int, error) {
 	}
 
 	// Handle the case where the branch is configured to merge a special PR head ref
-	branchConfig, err := f.branchConfig(branch)
+	mergeRef, err := f.branchMergeRef(branch)
 	if err != nil {
 		return "", 0, err
 	}
 
-	if m := prHeadRE.FindStringSubmatch(branchConfig.MergeRef); m != nil {
+	if m := prHeadRE.FindStringSubmatch(mergeRef); m != nil {
 		prNumber, _ := strconv.Atoi(m[1])
 		return "", prNumber, nil
 	}

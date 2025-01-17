@@ -402,6 +402,25 @@ func (c *Client) ReadAtPushRef(ctx context.Context, branch string) (string, erro
 	return string(revParseOut), nil
 }
 
+// ReadBranchMergeRef gets the merge ref for the current branch.
+func (c *Client) ReadBranchMergeRef(ctx context.Context, branch string) (string, error) {
+	args := []string{"config", "--get", fmt.Sprintf("branch.%s.merge", branch)}
+	cmd, err := c.Command(ctx, args...)
+	if err != nil {
+		return "", err
+	}
+	out, err := cmd.Output()
+	if err != nil {
+		var gitErr *GitError
+		if ok := errors.As(err, &gitErr); ok && gitErr.ExitCode == 1 {
+			gitErr.Stderr = fmt.Sprintf("unknown branch name '%s'", branch)
+			return "", gitErr
+		}
+		return "", err
+	}
+	return firstLine(out), nil
+}
+
 // ReadBranchConfig parses the `branch.BRANCH.(remote|merge|gh-merge-base)` part of git config.
 // If no branch config is found or there is an error in the command, it returns an empty BranchConfig.
 // Downstream consumers of ReadBranchConfig should consider the behavior they desire if this errors,

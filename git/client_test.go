@@ -850,6 +850,75 @@ func TestClientReadAtPushRef(t *testing.T) {
 	}
 }
 
+func TestClientReadBranchMergeRef(t *testing.T) {
+	tests := []struct {
+		name          string
+		branch        string
+		gitConfigMock commandResult
+		wantMergeRef  string
+		wantErr       error
+	}{
+		{
+			name:   "when `git config --get branch.branchName.merge` resolves, it returns the correct MergeRef",
+			branch: "branchName",
+			gitConfigMock: commandResult{
+				Stdout: "refs/heads/branchName",
+			},
+			wantMergeRef: "refs/heads/branchName",
+			wantErr:      nil,
+		},
+		{
+			name:   "when `git config --get branch.branchName.merge` resolves with a special PR ref, it returns the correct MergeRef",
+			branch: "branchName",
+			gitConfigMock: commandResult{
+				Stdout: "refs/pull/42/head",
+			},
+			wantMergeRef: "refs/pull/42/head",
+			wantErr:      nil,
+		},
+		{
+			name:   "when the command returns no results, it provides the correct error",
+			branch: "branchName",
+			gitConfigMock: commandResult{
+				ExitStatus: 1,
+			},
+			wantMergeRef: "",
+			wantErr:      errors.New("failed to run git: unknown branch name 'branchName'"),
+		},
+		{
+			name:   "when the command errors, it returns the error",
+			branch: "branchName",
+			gitConfigMock: commandResult{
+				ExitStatus: 2,
+				Stderr:     "git-error",
+			},
+			wantMergeRef: "",
+			wantErr:      errors.New("failed to run git: git-error"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pathToGit := "path/to/git"
+			gitConfigMergeRefCommand := fmt.Sprintf("%s config --get branch.%s.merge", pathToGit, tt.branch)
+			cmdCtx := createMockedCommandContext(t, mockedCommands{
+				args(gitConfigMergeRefCommand): tt.gitConfigMock,
+			})
+			client := Client{
+				GitPath:        pathToGit,
+				commandContext: cmdCtx,
+			}
+			mergeRef, err := client.ReadBranchMergeRef(context.Background(), tt.branch)
+			if tt.wantErr != nil {
+				require.Error(t, err)
+				assert.EqualError(t, err, tt.wantErr.Error())
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Equal(t, tt.wantMergeRef, mergeRef)
+		})
+	}
+}
+
 func Test_parseBranchConfig(t *testing.T) {
 	tests := []struct {
 		name             string
