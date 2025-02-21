@@ -67,8 +67,10 @@ func GlobWindowsPaths(patterns []string) ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", pattern, err)
 		}
-		if len(matches) != 0 {
+		if len(matches) > 0 {
 			expansions = append(expansions, matches...)
+		} else {
+			expansions = append(expansions, pattern)
 		}
 	}
 

@@ -71,9 +71,9 @@ func TestGlobWindowsPaths(t *testing.T) {
 			wantErr:  nil,
 		},
 		{
-			name:     "When no files match, it returns an empty expansions array",
+			name:     "When no files match, it returns an empty expansions array, it returns the unmatched patterns",
 			patterns: []string{"foo", "bar"},
-			wantOut:  []string{},
+			wantOut:  []string{"foo", "bar"},
 			wantErr:  nil,
 		},
 		{
