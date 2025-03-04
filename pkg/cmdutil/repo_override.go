@@ -69,7 +69,7 @@ func EnableRepoOverride(cmd *cobra.Command, f *Factory) {
 			// or by adjusting all our types so that the "source" of the BaseRepo is surfaced, which is a
 			// pretty big change.
 			if userProvidedRepo != "" {
-				// TODO: comment why we ignore error
+				// We can ignore errors here because the flag is guaranteed to exist and be a string.
 				_ = cmd.Flags().Set("repo", userProvidedRepo)
 			}
 		}
