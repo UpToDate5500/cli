@@ -1,6 +1,7 @@
 package cmdutil
 
 import (
+	"fmt"
 	"os"
 	"sort"
 	"strings"
@@ -69,8 +70,9 @@ func EnableRepoOverride(cmd *cobra.Command, f *Factory) {
 			// or by adjusting all our types so that the "source" of the BaseRepo is surfaced, which is a
 			// pretty big change.
 			if userProvidedRepo != "" {
-				// We can ignore errors here because the flag is guaranteed to exist and be a string.
-				_ = cmd.Flags().Set("repo", userProvidedRepo)
+				if err := cmd.Flags().Set("repo", userProvidedRepo); err != nil {
+					return fmt.Errorf("failed to set repo override flag: %v", err)
+				}
 			}
 		}
 
