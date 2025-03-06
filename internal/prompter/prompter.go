@@ -80,8 +80,18 @@ func (h *huhPrompter) MultiSelect(prompt string, defaults []string, options []st
 	panic("not implemented")
 }
 
-func (h *huhPrompter) Input(prompt, defaultValue string) (string, error) {
-	panic("not implemented")
+func (p *huhPrompter) Input(prompt, defaultValue string) (string, error) {
+	result := defaultValue
+	form := p.newForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title(prompt).
+				Value(&result),
+		),
+	)
+
+	err := form.Run()
+	return result, err
 }
 
 func (h *huhPrompter) Password(prompt string) (string, error) {
