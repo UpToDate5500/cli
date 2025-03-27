@@ -135,7 +135,6 @@ func (r pushableRefs) HeadRepo() ghrepo.Interface {
 	return r.headRepo
 }
 
-// TODO: consider not embedding here, because it's a bit misleading
 type forkableRefs struct {
 	qualifiedHeadRef shared.QualifiedHeadRef
 
@@ -781,8 +780,6 @@ func NewCreateContext(opts *CreateOptions) (*CreateContext, error) {
 			// If we had a matching ref, then we can skip pushing.
 			refsMatch := len(resolvedRefs) == 2 && resolvedRefs[0].Hash == resolvedRefs[1].Hash
 			if refsMatch {
-				// TODO wm: is there a better way to avoid this? Seems a bit janky.
-				// TODO wm: should this actually be checking repos, what about org forks? They don't work by default I guess.
 				qualifiedHeadRef := shared.NewQualifiedHeadRefWithoutOwner(defaultPRHead.BranchName)
 				if headRepo.RepoOwner() != baseRepo.RepoOwner() {
 					qualifiedHeadRef = shared.NewQualifiedHeadRef(headRepo.RepoOwner(), defaultPRHead.BranchName)
@@ -849,8 +846,6 @@ func NewCreateContext(opts *CreateOptions) (*CreateContext, error) {
 				return nil, err
 			}
 
-			// TODO wm: is there a better way to avoid this? Seems a bit janky.
-			// TODO wm: should this actually be checking repos, what about org forks? They don't work by default I guess.
 			qualifiedHeadRef := shared.NewQualifiedHeadRefWithoutOwner(ref.Branch)
 			if baseRepo.RepoOwner() != remote.RepoOwner() {
 				qualifiedHeadRef = shared.NewQualifiedHeadRef(remote.RepoOwner(), ref.Branch)
