@@ -99,6 +99,7 @@ func (r baseRefs) BaseRepo() *api.Repository {
 	return r.baseRepo
 }
 
+// skipPushRefs indicate to handlePush that no pushing is required.
 type skipPushRefs struct {
 	baseRefs
 
@@ -113,6 +114,9 @@ func (r skipPushRefs) UnqualifiedHeadRef() string {
 	return r.qualifiedHeadRef.BranchName()
 }
 
+// pushableRefs indicate to handlePush that pushing is required,
+// and provide further information (HeadRepo) on where that push
+// should go.
 type pushableRefs struct {
 	baseRefs
 
@@ -135,6 +139,11 @@ func (r pushableRefs) HeadRepo() ghrepo.Interface {
 	return r.headRepo
 }
 
+// forkableRefs indicate to handlePush that forking is required before
+// pushing. The expectation is that after forking, this is converted to
+// pushableRefs. We could go very OOP and have a Fork method on this
+// struct that returns a pushableRefs but then we'd need to embed an API client
+// and it just seems nice that it is a simple bag of data.
 type forkableRefs struct {
 	baseRefs
 
