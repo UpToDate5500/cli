@@ -302,7 +302,7 @@ func NewCmdExtension(f *cmdutil.Factory) *cobra.Command {
 					%[1]sOWNER/REPO%[1]s format or as a full repository URL.
 					The URL format is useful when the repository is not hosted on <github.com>.
 
-					For remote repositories, the GitHub CLI attempts to install the extenion with the following logic:
+					For remote repositories, the GitHub CLI attempts to install the extension with the following logic:
 
 					- First, look for release assets in the repository's latest release. If found, the
 					extension is treated as a binary extension. It will be installed from either the
