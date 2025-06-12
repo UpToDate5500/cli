@@ -5,7 +5,10 @@ set -e
 PR_URL="$1"
 
 if [ -z "$PR_URL" ]; then
-    echo "Usage: $0 <pr_url>"
+    echo "Usage: $0 <PR_URL>"
+    echo ""
+    echo "Check if the PR references any non-help-wanted issues and, if so, comment"
+    echo "on it explaining why the team might close/dismiss it."
     exit 1
 fi
 
