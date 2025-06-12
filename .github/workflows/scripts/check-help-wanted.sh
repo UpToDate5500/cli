@@ -33,7 +33,7 @@ for issue_num in $CLOSING_ISSUES; do
     LABELS=$(gh issue view "$issue_num" --json labels --jq '.labels[].name')
 
     # Check if help-wanted label exists
-    if ! echo "$LABELS" | grep -q "help-wanted"; then
+    if ! echo "$LABELS" | grep -q "^help-wanted$"; then
         ISSUES_WITHOUT_HELP_WANTED+=("$issue_num")
         echo "Issue #$issue_num does not have help-wanted label"
     else
