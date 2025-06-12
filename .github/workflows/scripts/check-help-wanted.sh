@@ -13,13 +13,13 @@ if [ -z "$PR_URL" ]; then
 fi
 
 # Extract PR number from URL for logging
-PR_NUM=$(basename "$PR_URL")
+PR_NUM="$(basename "$PR_URL")"
 
 # Get PR details including closing issues references
-PR_DATA=$(gh pr view "$PR_URL" --json closingIssuesReferences)
+PR_DATA="$(gh pr view "$PR_URL" --json closingIssuesReferences)"
 
 # Extract closing issues references
-CLOSING_ISSUES=$(echo "$PR_DATA" | jq -r '.closingIssuesReferences[]?.number // empty')
+CLOSING_ISSUES="$(echo "$PR_DATA" | jq -r '.closingIssuesReferences[]?.number // empty')"
 
 if [ -z "$CLOSING_ISSUES" ]; then
     echo "No closing issues found for PR #$PR_NUM"
