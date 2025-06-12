@@ -63,7 +63,7 @@ While we appreciate your initiative, please note that:
 
 - **PRs for non-\`help-wanted\` issues may not be reviewed immediately** as they might not align with our current priorities
 - **The issue might already be assigned** to a team member or planned for a specific release
-- **We may need to close this PR** if it conflicts with ongoing work or architectural decisions
+- **We may need to close this PR**. For example, if it conflicts with ongoing work or architectural decisions
 
 **What happens next:**
 - Our team will review this PR and the associated issues
