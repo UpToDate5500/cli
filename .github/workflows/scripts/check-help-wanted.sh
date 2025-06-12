@@ -67,9 +67,8 @@ While we appreciate your initiative, please note that:
 
 **What happens next:**
 - Our team will review this PR and the associated issues
-- We may add the \`help-wanted\` label to the issues if appropriate
-- We may provide feedback on the approach or request changes
-- In some cases, we may need to close the PR if it doesn't fit our current roadmap
+- We may add the \`help-wanted\` label to the issues, if appropriate, and review this pull request
+- In some cases, we may need to close the PR. For example, if it doesn't fit our current roadmap
 
 Thank you for your understanding and contribution to the project! 🙏
 
