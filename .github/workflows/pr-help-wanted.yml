@@ -5,7 +5,7 @@ on:
 
 permissions:
   contents: none
-  issues: write
+  issues: read
   pull-requests: write
 
 jobs:
