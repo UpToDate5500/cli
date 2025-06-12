@@ -35,8 +35,19 @@ for issue_num in $CLOSING_ISSUES; do
     # Get issue labels
     LABELS=$(gh issue view "$issue_num" --json labels --jq '.labels[].name')
 
+    # Skip if the issue has the gh-attestion or gh-codespace label
+    # This is because the codeowners for these commands may not be public
+    # cli org members, and so unless we authenticate with a PAT, we can't
+    # know who is an external contributor or not.
+    # So we skip these issues to avoid falsely writing a comment
+    # on each PR opened by these codeowners.
+    if echo "$LABELS" | grep -q -e "gh-attestation" -e "gh-codespace"; then
+        echo "Issue #$issue_num is skipped due to labels"
+        continue
+    fi
+
     # Check if help-wanted label exists
-    if ! echo "$LABELS" | grep -q "^help-wanted$"; then
+    if ! echo "$LABELS" | grep -q "help-wanted"; then
         ISSUES_WITHOUT_HELP_WANTED+=("$issue_num")
         echo "Issue #$issue_num does not have help-wanted label"
     else
